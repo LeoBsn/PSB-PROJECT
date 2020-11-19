@@ -1,0 +1,236 @@
+---
+title: "MANIPULATION DE STRING AVEC R"
+author: "Léonard Boisson"
+date: "15/11/2020"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+![Légende](C:/Users/leona/string1.png)
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+# **I - INTRODUCTION**
+
+## Définition
+
+Le package stringr , développé par Hadley Wickham, a été conçu pour agir comme une simple 'enveloppe' permettant de rendre les fonctionnalités de R applicables aux chaînes de caractères plus cohérentes, simples et faciles à utiliser
+
+## Historique
+
+Stringr a été construit à partir du package stringi, qui lui utilise la librairie C/C++ de la ICU (International Components for Unicode), fournissant des implémentations rapides et robustes couvrant pratiquement toutes les manipulations de chaînes de caractères imaginables. 
+
+Cette particularité permet au package stringr d’offrir des fonctions qui gèrent convenablement les valeurs manquantes NA ainsi que les caractères de longueur nulle, en plus d’assurer une cohérence au niveau des noms de fonction et d’argument.
+
+Finalement, toutes les fonctionnalités de stringr retournent des structures de données en sortie qui correspondent à celles reçues en entrée par les autres fonctions du package. Cette dernière caractéristique simplifie de beaucoup l’utilisation du résultat d’une fonction comme argument en entrée d’une autre fonction.
+
+## Pourquoi ?
+
+Deux raison principales :
+
+- Car nous souhaitons travaillez sur des textes et plus précisement faire du *text mining* sur ces données.
+
+- Car nous souhaitons *nettoyer/récupérer* des infos empriosnnées dans des chaînes de caractères. 
+
+## Chargement du package
+
+```{r}
+library('stringr')
+```
+
+# **II - FONCTIONS DE BASE**
+
+
+*Petit aide mémoire visuelles de quelques fonctions expliquées plus bas*
+
+![Légende](C:/Users/leona/staide_memoire.png)
+
+*On va considérer le tableau suivant pour tous les exemples qui suivront :*
+
+```{r}
+library(readxl)
+```
+```{r}
+d <- read_excel("C:/Users/leona/netflix_titles.xlsx", col_types = c("text", 
+    "text", "text", "text", "text", "text", 
+    "text", "text", "text", "text", "text", 
+    "text"))
+```
+```{r}
+d
+```
+
+*Movies and TV Shows listings on Netflix*
+
+## 1.   Concaténer des chaînes de caractères avec str_c
+
+- Par défaut, str_c concatène en ajoutant un espace entre les différentes chaînes. Il est possible de spécifier un autre séparateur avec son argument sep.
+
+```{r}
+str_c(d$title, d$director, sep = " - ")
+```
+- Si on veut concaténer les différents éléments d’un vecteur entre eux, il faut ajouter l’argument collapse qui renvoi le séparateur.
+
+```{r}
+str_c(d$type, collapse = " - ")
+```
+## 2.   Convertir en majuscule et minuscule
+
+### *a) str_to_lower : convertit en minuscule*
+
+```{r}
+str_to_lower(d$cast)
+```
+### *b) str_to_upper : convertit en majuscule
+
+```{r}
+str_to_upper(d$cast)
+```
+### *c) str_to_title : capitalise les éléments d'un vecteurde chaînes de caractères
+
+```{r}
+str_to_title(d$description)
+```
+
+## 3.   Trouver la longueur d'une chaîne de caractère avec str_lenght
+
+- Renvoie le nombre de caractères de chaque éléments
+
+```{r}
+str_length(d$description)
+```
+
+## 4.   Suppression des espace en début et fin
+
+- Supprime les espaces en début et fin de chaîne de caractères
+
+```{r}
+str_trim('       Le vent souffle sur les plaines de la Bretagne armoricaine       ')
+```
+
+
+## 5.   Découper des chaînes de caractères avec str_split
+
+- Découpe la chaîne de caractère en fonction d’un délimiteur.
+
+```{r}
+str_split('Et un et deux et trois zéro', ' ')
+```
+
+- Appliqué à un vecteur/colonne d'un tableau, str_split créé une ou plusieurs listes
+
+```{r}
+str_split(d$cast, ",")
+```
+- Appliqué à un tableau, str_plit peut aussi créer une matrice si on ajoute l’argument 
+simplify = TRUE
+
+```{r}
+str_split(d$date_added, ",", simplify = TRUE)
+```
+
+## 6.   Extraire des sous-chaînes par position avec str_sub
+
+- Extrait des sous-chaînes par position en indiquant les positions des premier et dernier caractères
+
+```{r}
+str_sub(d$type, 1, 4)
+```
+
+## 7.   Détecter des motifs 
+
+### *a) str_detect*
+
+- Détecte la présence d’un ou plusieurs caractères parmi les éléments d’un vecteur, en renvoyant un vecteur de valeurs logiques
+
+```{r}
+str_detect(d$type, 'Movie')
+```
+
+### *b. str_count*
+
+- Renvoie le nombre de fois ou le caractère choisis est présent
+
+```{r}
+str_count(d$title, 'o')
+```
+
+### *c. str_subset*
+
+- Renvoie seulement les éléments où la chaîne de caractère choisit est présente.
+
+```{r}
+str_subset(d$type, 'TV')
+```
+
+## 8.   Extraire des caractères avec str_extract
+
+- Permet d’extraire les valeurs correspondant à une chaîne de caractère en utilisant des expressions régulières en arguments.
+
+- Str_extract extrait la première occurrence 
+
+```{r}
+str_extract(d$duration, '^\\d+')
+# Isole les numéros
+```
+- Str_extract_all extrait l’ensemble des nombres présents
+
+```{r}
+str_extract_all(d$date_added, "\\d+")
+```
+
+## 9.   Remplacer des motifs avec str_replace
+
+- Remplace une chaîne de caractère ou un motif par un autre 
+
+```{r}
+str_replace(d$date_added, 'September', '9,')
+```
+- str_replace_all permet de spécifier plusieurs remplacements d’un coup
+
+```{r}
+str_remove_all(d$type, c('Movie'='M', 'TV Show'='T'))
+```
+
+## 10.   Modificateur de motifs avec fixed
+
+- On peut spécifier qu’un motif n’est pas une expression régulière mais une chaîne de caractère en lui appliquant la fonction fixed.
+
+- Par exemple, si on veut compter le nombre de point, le paramétrage par défaut ne fonctionnera pas car dans une expression régulière, le point signifie "*n’importe quel caractère*".
+
+```{r}
+# Paramétrage par défaut
+str_count(d$description, '.')
+```
+
+```{r}
+# Paramétrage avec fixed
+
+str_count(d$description, fixed('.'))
+```
+
+# **III - LES EXPRESSIONS REGULIERES**
+
+Les ER sont utiles car les chaînes contiennent généralement des données non structurées ou semi-structurées, et les ER sont un langage concis pour décrire les motifs des chaînes. Lorsque vous regardez une ER pour la première fois, vous pensez qu'un chat a marché sur votre clavier, mais au fur et à mesure que votre compréhension s'améliore, les ER commencent à avoir un sens. 
+
+Très simplement, l’utilisation d’une expression régulière (ou regex) vous permet de parcourir une séquence de texte, afin d’en faire ressortir les motifs compatibles avec le pattern d’entrée.   L’objectif ? Visualiser, modifier, ou encore supprimer…
+
+Quelques liens pour mieux comprendre les RegEx :
+
+- (https://data.hypotheses.org/959)
+- (https://informatique-mia.inrae.fr/r4ciam/node/131)
+- (https://thinkr.fr/r-les-expressions-regulieres/)
+
+# **III.	RESSOURCES**
+
+- (https://stringr.tidyverse.org/) Le site officiel de stringr 
+
+- (https://stringr.tidyverse.org/reference/index.html) Liste des fonctions et pages d’aide associées 
+
+- (https://stringr.tidyverse.org/articles/regular-expressions.html) Article dédié aux expressions régulières, en anglais
+
+- (http://perso.ens-lyon.fr/lise.vaudor/Descriptoire/_book/intro.html#import-dans-r-de-donnees-textuelles) Cours plus avancé sur stringr
+
+- (https://www.programmersought.com/article/7567693645/) Tutoriel détaillé sur le package stringr
